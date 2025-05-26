@@ -10,9 +10,13 @@ module.exports = async (req, res) => {
 
   const { email, name, transaction, number } = req.body;
 
+  if (!email || !name || !transaction || !number) {
+    return res.status(400).json({ message: 'Missing required fields.' });
+  }
+
   const msg = {
     to: email,
-    from: 'egypt.in.frankfurt@gmail.com',
+    from: 'egypt.in.frankfurt@gmail.com', // Make sure this is verified in SendGrid!
     subject: `طلبك: ${transaction}`,
     text: `تم تسجيل طلبك بنجاح.\n\nالاسم: ${name}\nرقم الطلب: ${number}\nنوع المعاملة: ${transaction}`
   };
@@ -22,7 +26,11 @@ module.exports = async (req, res) => {
     console.log("SendGrid response:", result);
     res.status(200).json({ message: '📧 تم إرسال البريد الإلكتروني بنجاح.' });
   } catch (error) {
-    console.error("SendGrid error:", error.response?.body || error.message);
-    res.status(500).json({ message: '❌ فشل إرسال البريد الإلكتروني.', error: error.message });
+    console.error("SendGrid error:", error.response?.body || error.message, error);
+    res.status(500).json({ 
+      message: '❌ فشل إرسال البريد الإلكتروني.', 
+      error: error.message, 
+      details: error.response?.body 
+    });
   }
 };
